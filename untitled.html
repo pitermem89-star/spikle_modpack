@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Modpack Hub</title>
+
+    <style>
+        :root {
+            --bg-color: #08090c;
+            --card-bg: rgba(18, 20, 28, 0.4);
+            --text-main: #f0f1f5;
+            --accent-green: #a7f3d0;
+            --btn-bg: rgba(255, 255, 255, 0.03);
+            --btn-border: rgba(255, 255, 255, 0.07);
+            
+            /* Монохромные кубы Material You */
+            --shape-light: rgba(255, 255, 255, 0.25);
+            --shape-mid: rgba(138, 138, 147, 0.3);
+            --shape-dark: rgba(30, 32, 44, 0.6);
+        }
+
+        @font-face {
+            font-family: 'MinecraftCustom';
+            src: url('minecraft.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'MinecraftCustom', monospace, sans-serif; 
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px;
+            color: var(--text-main);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Задний фон с пиксельными блоками */
+        .bg-blur-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            mix-blend-mode: screen;
+            opacity: 0.6;
+            filter: blur(35px);
+            border-radius: 4px;
+        }
+
+        .shape-1 { top: 15%; left: 20%; width: 140px; height: 140px; background: var(--shape-light); animation: fastMove1 8s infinite alternate linear; }
+        .shape-2 { bottom: 20%; right: 15%; width: 160px; height: 160px; background: var(--shape-dark); animation: fastMove2 9s infinite alternate linear; }
+        .shape-3 { top: 50%; left: 40%; width: 120px; height: 120px; background: var(--shape-mid); animation: fastMove3 7s infinite alternate linear; }
+        .shape-4 { bottom: 10%; left: 10%; width: 150px; height: 150px; background: var(--shape-dark); animation: fastMove4 10s infinite alternate linear; }
+        .shape-5 { top: 5%; right: 25%; width: 130px; height: 130px; background: var(--shape-light); animation: fastMove2 6s infinite alternate linear; }
+        .shape-6 { bottom: 40%; right: 45%; width: 110px; height: 110px; background: var(--shape-mid); animation: fastMove1 7.5s infinite alternate linear; }
+
+        /* UI Карточка */
+        .ui-card {
+            position: relative;
+            z-index: 2;
+            background: var(--card-bg);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--btn-border);
+            border-radius: 28px;
+            padding: 44px 36px;
+            width: 100%;
+            max-width: 430px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6), 
+                        inset 0 1px 1px rgba(255, 255, 255, 0.12);
+            text-align: center;
+        }
+
+        /* Обновленная верхняя плашка под твой текст */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--btn-border);
+            padding: 8px 18px;
+            border-radius: 100px;
+            font-size: 10px;
+            color: #ffffff;
+            margin-bottom: 32px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+        }
+
+        /* Интерактивные кнопки (изначально темные по макету) */
+        .pixel-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.02); /* Темный полупрозрачный фон */
+            color: var(--text-main);
+            text-decoration: none;
+            padding: 22px 16px;
+            font-size: 13px;
+            border: 1px solid var(--btn-border);
+            border-radius: 18px; /* Красивое закругление */
+            
+            /* Плавный переход цвета при наведении и тапе */
+            transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+                        color 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+                        border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.1s ease;
+        }
+
+        /* ЭФФЕКТ НАВЕДЕНИЯ КУРСОРA / КАСАНИЯ ПАЛЬЦЕМ: кнопка становится белой */
+        .pixel-btn:hover {
+            background-color: #ffffff; /* Белый фон */
+            color: #08090c;            /* Черный текст */
+            border-color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        /* Легкий клик */
+        .pixel-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* Анимации движения кубов */
+        @keyframes fastMove1 { 0% { transform: translate(0px, 0px) rotate(0deg) scale(1); } 100% { transform: translate(160px, 120px) rotate(90deg) scale(1.1); } }
+        @keyframes fastMove2 { 0% { transform: translate(0px, 0px) rotate(0deg); } 100% { transform: translate(-140px, -160px) rotate(-90deg); } }
+        @keyframes fastMove3 { 0% { transform: translate(0px, 0px) scale(0.9); } 100% { transform: translate(-120px, 140px) scale(1.2); } }
+        @keyframes fastMove4 { 0% { transform: translate(0px, 0px) rotate(0deg); } 100% { transform: translate(150px, -100px) rotate(180deg); } }
+        
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(167, 243, 208, 0.4); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(167, 243, 208, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(167, 243, 208, 0); }
+        }
+
+        @media (max-width: 480px) {
+            .ui-card { padding: 36px 24px; border-radius: 24px; }
+            .pixel-btn { font-size: 11px; padding: 18px 12px; border-radius: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-blur-container">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="shape shape-5"></div>
+        <div class="shape shape-6"></div>
+    </div>
+
+    <div class="ui-card">
+        
+        <!-- Новое название плашки -->
+        <div class="status-badge">
+            <span class="status-dot"></span> SPIKLE'S modpack
+        </div>
+
+        <div class="container">
+            <!-- Кнопка 1: Скачать сборку модов -->
+            <a href="modpack.zip" download="Minecraft-Modpack.zip" class="pixel-btn">
+                Download Mod Pack
+            </a>
+
+            <!-- Кнопка 2: Ссылка на ТГК -->
+            <a href="https://t.me" target="_blank" class="pixel-btn">
+                My TGK
+            </a>
+        </div>
+
+    </div>
+
+</body>
+</html>
